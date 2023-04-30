@@ -1,4 +1,4 @@
-package api
+package vote_service
 
 import (
 	desc "github.com/hmuriyMax/vote/internal/pb/vote_service"

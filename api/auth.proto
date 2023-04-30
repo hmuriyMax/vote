@@ -1,0 +1,50 @@
+syntax = "proto3";
+package vote_service;
+option go_package = "/auth_service";
+
+import "google/api/annotations.proto";
+
+service AuthService {
+  rpc Auth(AuthRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth"
+      body: "user"
+    };
+  }
+
+  rpc Register(AuthRequest) returns (RegResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth"
+      body: "user"
+    };
+  }
+}
+
+message AuthRequest {
+  string login = 1;
+  string pass = 2;
+}
+
+message Token{
+  string token = 1;
+  int64 expires = 2;
+}
+
+message AuthResponse {
+  enum AuthStatus {
+    Success = 0; // successful
+    Unauthenticated = 1; // unauthenticated
+  }
+  AuthStatus status = 1;
+  Token token = 2;
+}
+
+message RegResponse {
+  enum RegStatus {
+    Success = 0; // successful
+    InsecurePass = 1; // insecure
+    AlreadyExists = 2; // already exists
+  }
+  RegStatus status = 1;
+  Token token = 2;
+}

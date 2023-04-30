@@ -20,5 +20,9 @@ message VoteRequest {
 }
 
 message VoteResponse {
-  string status = 1;
+  enum VoteStatus {
+    Accepted = 0; // The vote was accepted
+    Cancelled = 1; // The vote was cancelled
+  }
+  VoteStatus status = 1;
 }

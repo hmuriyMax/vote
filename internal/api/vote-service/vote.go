@@ -1,4 +1,4 @@
-package api
+package vote_service
 
 import (
 	"context"
