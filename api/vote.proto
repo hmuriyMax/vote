@@ -1,0 +1,80 @@
+syntax = "proto3";
+package vote_service;
+option go_package = "/vote_service";
+
+import "google/api/annotations.proto";
+
+service VoteService {
+
+  rpc Vote(VoteRequest) returns (VoteResponse) {
+    option (google.api.http) = {
+      post: "/v1/vote"
+      body: "user"
+    };
+  }
+
+  rpc GetVotesForUser(GetVotesRequest) returns (GetVotesResponse) {
+    option (google.api.http) = {
+      post: "/v1/get-votes"
+      body: "user"
+    };
+  }
+
+  rpc GetVoteInfo(GetVoteInfoRequest) returns (GetVoteInfoResponse) {
+    option (google.api.http) = {
+      post: "/v1/get-vote-info"
+      body: "user"
+    };
+  }
+}
+
+message VoteRequest {
+  AuthInfo auth = 1;
+  bytes cypher_vote = 2;
+}
+
+message VoteResponse {
+  enum VoteStatus {
+    Accepted = 0; // The vote was accepted
+    Cancelled = 1; // The vote was cancelled
+  }
+  VoteStatus status = 1;
+}
+
+message GetVotesRequest {
+  AuthInfo auth = 1;
+}
+
+message GetVotesResponse {
+  repeated ShortVoteInfo votes = 1;
+}
+
+message GetVoteInfoRequest {
+  AuthInfo auth = 1;
+  int64 vote_id = 2;
+}
+
+message GetVoteInfoResponse {
+  ExtendedVoteInfo info = 1;
+}
+
+message ShortVoteInfo{
+  int64 id = 1;
+  string name = 2;
+  int64 finishes = 3;
+}
+
+message Variant{
+  int64 id = 1;
+  string name = 2;
+}
+
+message ExtendedVoteInfo{
+  ShortVoteInfo short = 1;
+  repeated Variant variants = 2;
+}
+
+message AuthInfo{
+  int64 userID = 1;
+  string token = 2;
+}

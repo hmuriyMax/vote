@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	Auth(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*AuthResponse, error)
-	Register(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*RegResponse, error)
+	Register(ctx context.Context, in *RegRequest, opts ...grpc.CallOption) (*RegResponse, error)
 }
 
 type authServiceClient struct {
@@ -48,7 +48,7 @@ func (c *authServiceClient) Auth(ctx context.Context, in *AuthRequest, opts ...g
 	return out, nil
 }
 
-func (c *authServiceClient) Register(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*RegResponse, error) {
+func (c *authServiceClient) Register(ctx context.Context, in *RegRequest, opts ...grpc.CallOption) (*RegResponse, error) {
 	out := new(RegResponse)
 	err := c.cc.Invoke(ctx, AuthService_Register_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -62,7 +62,7 @@ func (c *authServiceClient) Register(ctx context.Context, in *AuthRequest, opts 
 // for forward compatibility
 type AuthServiceServer interface {
 	Auth(context.Context, *AuthRequest) (*AuthResponse, error)
-	Register(context.Context, *AuthRequest) (*RegResponse, error)
+	Register(context.Context, *RegRequest) (*RegResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -73,7 +73,7 @@ type UnimplementedAuthServiceServer struct {
 func (UnimplementedAuthServiceServer) Auth(context.Context, *AuthRequest) (*AuthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Auth not implemented")
 }
-func (UnimplementedAuthServiceServer) Register(context.Context, *AuthRequest) (*RegResponse, error) {
+func (UnimplementedAuthServiceServer) Register(context.Context, *RegRequest) (*RegResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
@@ -108,7 +108,7 @@ func _AuthService_Auth_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _AuthService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthRequest)
+	in := new(RegRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func _AuthService_Register_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: AuthService_Register_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).Register(ctx, req.(*AuthRequest))
+		return srv.(AuthServiceServer).Register(ctx, req.(*RegRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

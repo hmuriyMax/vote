@@ -1,7 +1,6 @@
 package db
 
 import (
-	"github.com/hmuriyMax/vote/internal/repo"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -9,7 +8,7 @@ type Postgres struct {
 	db *sqlx.DB
 }
 
-func NewPostgres(db *sqlx.DB) repo.Repository {
+func NewPostgres(db *sqlx.DB) *Postgres {
 	return &Postgres{
 		db: db,
 	}

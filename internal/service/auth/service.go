@@ -11,59 +11,81 @@ import (
 )
 
 type Service struct {
-	repository repo.Repository
+	repository repo.AuthRepository
 	TokenTTL   time.Duration
 }
 
-func NewAuthService(repo repo.Repository) *Service {
+func NewAuthService(repo repo.AuthRepository) *Service {
 	return &Service{
 		repository: repo,
+		TokenTTL:   24 * time.Hour,
 	}
 }
 
-func (d *Service) Login(ctx context.Context, username string, password string) (string, error) {
-	user, err := d.repository.SelectUser(ctx, username)
+func (d *Service) Login(ctx context.Context, login string, password string) (*model.UserAuth, *model.Token, error) {
+	user, err := d.repository.SelectUserByLogin(ctx, login)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", ErrNoUser
+			return nil, nil, ErrNoUser
 		}
-		return "", fmt.Errorf("failed to get user: %w", err)
+		return nil, nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
 	hashPass := sha256.Sum256([]byte(user.Password))
 	if string(hashPass[:]) != password {
-		return "", ErrWrongPassword
+		return nil, nil, ErrWrongPassword
 	}
 
 	token, err := d.repository.NewToken(ctx, user.ID)
 	if err != nil {
-		return "", fmt.Errorf("failed to create token: %w", err)
+		return nil, nil, fmt.Errorf("failed to create token: %w", err)
 	}
-	return token.Token, nil
+	return user, token, nil
 }
 
-func (d *Service) Register(ctx context.Context, username string, password string) (string, error) {
-	_, err := d.repository.SelectUser(ctx, username)
+func (d *Service) Register(ctx context.Context, username, login, password string) (*model.UserAuth, *model.Token, error) {
+	_, err := d.repository.SelectUserByLogin(ctx, username)
 	if err == nil {
-		return "", ErrAccountAlreadyExist
+		return nil, nil, ErrAccountAlreadyExist
 	}
 	if err != sql.ErrNoRows {
-		return "", fmt.Errorf("failed to get user: %w", err)
+		return nil, nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
 	hashPass := sha256.Sum256([]byte(password))
-	userId, err := d.repository.InsertUser(ctx, &model.UserAuth{
+	newUser := &model.UserAuth{
 		Name:      username,
+		Login:     login,
 		Password:  string(hashPass[:]),
 		IsBlocked: false,
-	})
+	}
+
+	userId, err := d.repository.InsertUser(ctx, newUser)
 	if err != nil {
-		return "", fmt.Errorf("failed to insert user: %w", err)
+		return nil, nil, fmt.Errorf("failed to insert user: %w", err)
 	}
 
 	token, err := d.repository.NewToken(ctx, userId)
 	if err != nil {
-		return "", fmt.Errorf("failed to create token: %w", err)
+		return nil, nil, fmt.Errorf("failed to create token: %w", err)
 	}
-	return token.Token, nil
+	return newUser, token, nil
+}
+
+func (d *Service) CheckToken(ctx context.Context, userID int64, token string) error {
+	user, err := d.repository.SelectUserByID(ctx, userID)
+	if err != nil {
+		return ErrNoUser
+	}
+	if user.IsBlocked {
+		return ErrUserBlocked
+	}
+	success, err := d.repository.AssertToken(ctx, userID, token)
+	if err != nil {
+		return fmt.Errorf("failed to check token: %w", err)
+	}
+	if !success {
+		return ErrUnauthorized
+	}
+	return nil
 }

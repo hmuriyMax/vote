@@ -12,7 +12,7 @@ service AuthService {
     };
   }
 
-  rpc Register(AuthRequest) returns (RegResponse) {
+  rpc Register(RegRequest) returns (RegResponse) {
     option (google.api.http) = {
       post: "/v1/auth"
       body: "user"
@@ -25,9 +25,21 @@ message AuthRequest {
   string pass = 2;
 }
 
+message RegRequest {
+  string login = 1;
+  string pass = 2;
+  string username = 3;
+}
+
 message Token{
   string token = 1;
   int64 expires = 2;
+}
+
+message UserInfo{
+  int64 userID = 1;
+  string username = 2;
+  Token token = 3;
 }
 
 message AuthResponse {
@@ -36,7 +48,7 @@ message AuthResponse {
     Unauthenticated = 1; // unauthenticated
   }
   AuthStatus status = 1;
-  Token token = 2;
+  UserInfo user = 2;
 }
 
 message RegResponse {
@@ -46,5 +58,5 @@ message RegResponse {
     AlreadyExists = 2; // already exists
   }
   RegStatus status = 1;
-  Token token = 2;
+  UserInfo user = 2;
 }

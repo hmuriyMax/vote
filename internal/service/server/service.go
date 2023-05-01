@@ -75,6 +75,8 @@ func (s RestServer) Start(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		s.grpcServer.GracefulStop()
+		log.Panicln("server gracefully stopped")
 	case err := <-errChan:
 		return fmt.Errorf("failed to start: %w", err)
 	}

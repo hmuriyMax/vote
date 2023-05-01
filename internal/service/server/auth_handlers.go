@@ -27,13 +27,14 @@ func (s RestServer) login(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"status":  resp.GetStatus(),
-		"token":   resp.GetToken().GetToken(),
-		"expires": resp.GetToken().GetExpires(),
+		"userID":  resp.GetUser().GetUserID(),
+		"token":   resp.GetUser().GetToken().GetToken(),
+		"expires": resp.GetUser().GetToken().GetExpires(),
 	})
 }
 
 func (s RestServer) register(ctx *gin.Context) {
-	var req *auth.AuthRequest
+	var req *auth.RegRequest
 	if err := ctx.Bind(req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"code": http.StatusBadRequest,
@@ -52,7 +53,8 @@ func (s RestServer) register(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"status":  resp.GetStatus(),
-		"token":   resp.GetToken().GetToken(),
-		"expires": resp.GetToken().GetExpires(),
+		"userID":  resp.GetUser().GetUserID(),
+		"token":   resp.GetUser().GetToken().GetToken(),
+		"expires": resp.GetUser().GetToken().GetExpires(),
 	})
 }

@@ -8,7 +8,6 @@ import (
 	authService "github.com/hmuriyMax/vote/internal/service/auth"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"time"
 )
 
 func (i *Implementation) Auth(ctx context.Context, req *auth.AuthRequest) (*auth.AuthResponse, error) {
@@ -16,7 +15,7 @@ func (i *Implementation) Auth(ctx context.Context, req *auth.AuthRequest) (*auth
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	token, err := i.authService.Login(ctx, req.GetLogin(), req.GetPass())
+	user, token, err := i.authService.Login(ctx, req.GetLogin(), req.GetPass())
 	if err != nil {
 		if errors.Is(err, authService.ErrNoUser) || errors.Is(err, authService.ErrWrongPassword) {
 			return nil, status.Errorf(codes.Unauthenticated, err.Error())
@@ -26,19 +25,23 @@ func (i *Implementation) Auth(ctx context.Context, req *auth.AuthRequest) (*auth
 
 	return &auth.AuthResponse{
 		Status: auth.AuthResponse_Success,
-		Token: &auth.Token{
-			Token:   token,
-			Expires: time.Now().Add(i.authService.TokenTTL).Unix(),
+		User: &auth.UserInfo{
+			UserID:   user.ID,
+			Username: user.Name,
+			Token: &auth.Token{
+				Token:   token.Token,
+				Expires: token.ExpiresAt.Unix(),
+			},
 		},
 	}, nil
 }
 
-func (i *Implementation) Register(ctx context.Context, req *auth.AuthRequest) (*auth.RegResponse, error) {
-	if err := validateAuthRequest(req); err != nil {
+func (i *Implementation) Register(ctx context.Context, req *auth.RegRequest) (*auth.RegResponse, error) {
+	if err := validateRegRequest(req); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	token, err := i.authService.Register(ctx, req.GetLogin(), req.GetPass())
+	user, token, err := i.authService.Register(ctx, req.GetUsername(), req.GetLogin(), req.GetPass())
 	if err != nil {
 		if errors.Is(err, authService.ErrAccountAlreadyExist) {
 			return &auth.RegResponse{Status: auth.RegResponse_AlreadyExists}, nil
@@ -48,15 +51,27 @@ func (i *Implementation) Register(ctx context.Context, req *auth.AuthRequest) (*
 
 	return &auth.RegResponse{
 		Status: auth.RegResponse_Success,
-		Token: &auth.Token{
-			Token:   token,
-			Expires: time.Now().Add(i.authService.TokenTTL).Unix(),
+		User: &auth.UserInfo{
+			UserID:   user.ID,
+			Username: user.Name,
+			Token: &auth.Token{
+				Token:   token.Token,
+				Expires: token.ExpiresAt.Unix(),
+			},
 		},
 	}, nil
 }
 
 func validateAuthRequest(req *auth.AuthRequest) error {
 	return validation.ValidateStruct(
+		validation.Field(&req.Login, validation.Required, validation.Length(3, 20)),
+		validation.Field(&req.Pass, validation.Required),
+	)
+}
+
+func validateRegRequest(req *auth.RegRequest) error {
+	return validation.ValidateStruct(
+		validation.Field(&req.Username, validation.Required, validation.Length(3, 20)),
 		validation.Field(&req.Login, validation.Required, validation.Length(3, 20)),
 		validation.Field(&req.Pass, validation.Required),
 	)
