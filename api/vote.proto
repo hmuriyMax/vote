@@ -30,7 +30,8 @@ service VoteService {
 
 message VoteRequest {
   AuthInfo auth = 1;
-  bytes cypher_vote = 2;
+  int64 vote_id = 2;
+  bytes cypher_vote = 3;
 }
 
 message VoteResponse {

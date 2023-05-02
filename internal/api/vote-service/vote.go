@@ -67,7 +67,7 @@ func (s *Implementation) GetVoteInfo(ctx context.Context, req *vote.GetVoteInfoR
 
 func validateVoteRequest(req *vote.VoteRequest) error {
 	err := validation.ValidateStruct(req,
-		validation.Field(&req.Auth, validation.NotNil),
+		validation.Field(&req.VoteId, validation.Required, validation.Min(1)),
 		validation.Field(&req.CypherVote, validation.Required),
 	)
 	if err != nil {
@@ -85,8 +85,7 @@ func validateGetVotesRequest(req *vote.GetVotesRequest) error {
 
 func validateGetVoteInfoRequest(req *vote.GetVoteInfoRequest) error {
 	if err := validation.ValidateStruct(req,
-		validation.Field(req.GetAuth(), validation.NotNil),
-		validation.Field(req.GetVoteId(), validation.Min(1)),
+		validation.Field(&req.VoteId, validation.Min(1)),
 	); err != nil {
 		return err
 	}

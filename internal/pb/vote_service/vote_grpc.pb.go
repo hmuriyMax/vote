@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.22.3
-// source: api/vote.proto
+// source: vote.proto
 
 package vote_service
 
@@ -179,5 +179,5 @@ var VoteService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/vote.proto",
+	Metadata: "vote.proto",
 }
