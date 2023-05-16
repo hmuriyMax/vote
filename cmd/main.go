@@ -27,12 +27,15 @@ func main() {
 	authService := auth.NewAuthService(repo)
 
 	voteService := vote.NewVoteService(
-		cypherService,
 		authService,
 		repo,
 	)
 
-	app := server.NewRestServer(vote_service.NewImplementation(voteService, authService), "7001", "5300")
+	app := server.NewRestServer(vote_service.NewImplementation(
+		voteService,
+		authService,
+		cypherService,
+	), "7001", "5300")
 	err = app.Start(ctx)
 	if err != nil {
 		log.Panicln(err)

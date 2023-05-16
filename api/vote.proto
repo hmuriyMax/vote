@@ -26,12 +26,19 @@ service VoteService {
       body: "user"
     };
   }
+
+  rpc GetVotePublicKey(empty) returns (GetVotePublicKeyResponse) {
+    option (google.api.http) = {
+      post: "/v1/get-public-key"
+      body: "user"
+    };
+  }
 }
 
 message VoteRequest {
   AuthInfo auth = 1;
-  int64 vote_id = 2;
-  bytes cypher_vote = 3;
+  bytes cypher_vote = 2;
+  bytes public_key = 3;
 }
 
 message VoteResponse {
@@ -59,6 +66,12 @@ message GetVoteInfoResponse {
   ExtendedVoteInfo info = 1;
 }
 
+message empty {}
+
+message GetVotePublicKeyResponse {
+  bytes PublicKeyJson = 1;
+}
+
 message ShortVoteInfo{
   int64 id = 1;
   string name = 2;
@@ -73,9 +86,15 @@ message Variant{
 message ExtendedVoteInfo{
   ShortVoteInfo short = 1;
   repeated Variant variants = 2;
+  string public_key = 3;
 }
 
 message AuthInfo{
   int64 userID = 1;
   string token = 2;
+}
+
+message VoteVariantPair{
+  int64 voteID = 1;
+  int64 variantID = 2;
 }

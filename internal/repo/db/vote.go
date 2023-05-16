@@ -61,3 +61,7 @@ func (r *Postgres) IncrementVote(ctx context.Context, variantID int64) (int64, e
 	}
 	return -1, nil
 }
+
+func (r *Postgres) AssertVote(ctx context.Context, voteID int64, variantID int64) error {
+	return nil
+}

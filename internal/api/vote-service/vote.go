@@ -2,7 +2,10 @@ package vote_service
 
 import (
 	"context"
+	"crypto/rsa"
+	"encoding/json"
 	"errors"
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	vote "github.com/hmuriyMax/vote/internal/pb/vote_service"
 	"github.com/hmuriyMax/vote/internal/service/auth"
@@ -18,7 +21,39 @@ func (s *Implementation) Vote(ctx context.Context, req *vote.VoteRequest) (*vote
 		return nil, err
 	}
 
-	return nil, status.Error(codes.Unimplemented, "/vote is not implemented")
+	var (
+		keyBytes    = req.GetPublicKey()
+		receivedKey rsa.PublicKey
+		serverKey   = s.cypherService.GetPublicKey()
+	)
+	err := json.Unmarshal(keyBytes, &receivedKey)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "unmarshal public key: %w", err)
+	}
+
+	if !serverKey.Equal(&receivedKey) {
+		return nil, status.Errorf(codes.PermissionDenied, "invalid public key")
+	}
+
+	var voteVariant vote.VoteVariantPair
+	err = s.cypherService.DecryptProto(req.GetCypherVote(), &voteVariant)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, fmt.Errorf("failed to decrypt vote: %w", err).Error())
+	}
+
+	err = s.voteService.AssertVoteVariant(ctx, voteVariant.VoteID, voteVariant.VariantID)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, fmt.Errorf("invalid vote variant: %w", err).Error())
+	}
+
+	_, err = s.voteService.Vote(ctx, voteVariant.VariantID)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Errorf("failed to vote: %w", err).Error())
+	}
+
+	return &vote.VoteResponse{
+		Status: vote.VoteResponse_Accepted,
+	}, nil
 }
 
 func (s *Implementation) GetVotesForUser(ctx context.Context, req *vote.GetVotesRequest) (*vote.GetVotesResponse, error) {
@@ -65,9 +100,19 @@ func (s *Implementation) GetVoteInfo(ctx context.Context, req *vote.GetVoteInfoR
 	}, nil
 }
 
+func (s *Implementation) GetVotePublicKey(ctx context.Context, req *vote.Empty) (*vote.GetVotePublicKeyResponse, error) {
+	publicKey := s.cypherService.GetPublicKey()
+	bytes, err := json.Marshal(publicKey)
+	if err != nil {
+		return nil, fmt.Errorf("marshal public key: %w", err)
+	}
+	return &vote.GetVotePublicKeyResponse{
+		PublicKeyJson: bytes,
+	}, nil
+}
+
 func validateVoteRequest(req *vote.VoteRequest) error {
 	err := validation.ValidateStruct(req,
-		validation.Field(&req.VoteId, validation.Required, validation.Min(1)),
 		validation.Field(&req.CypherVote, validation.Required),
 	)
 	if err != nil {

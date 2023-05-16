@@ -18,4 +18,5 @@ type VoteRepository interface {
 	GetVoteInfoByID(ctx context.Context, voteID int64) (*model.Vote, error)
 	GetVariantsByVoteID(ctx context.Context, voteID int64) ([]*model.Variant, error)
 	IncrementVote(ctx context.Context, variantID int64) (int64, error)
+	AssertVote(ctx context.Context, voteID int64, variantID int64) error
 }
