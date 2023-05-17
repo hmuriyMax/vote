@@ -4,29 +4,30 @@ option go_package = "/vote_service";
 
 import "google/api/annotations.proto";
 
+// Сервис голосования
 service VoteService {
-
+  // Метод голосования
   rpc Vote(VoteRequest) returns (VoteResponse) {
     option (google.api.http) = {
       post: "/v1/vote"
       body: "user"
     };
   }
-
+  // Получение доступных пользователю голосований
   rpc GetVotesForUser(GetVotesRequest) returns (GetVotesResponse) {
     option (google.api.http) = {
       post: "/v1/get-votes"
       body: "user"
     };
   }
-
+  // Получение информации о голосовании
   rpc GetVoteInfo(GetVoteInfoRequest) returns (GetVoteInfoResponse) {
     option (google.api.http) = {
       post: "/v1/get-vote-info"
       body: "user"
     };
   }
-
+  // Получение публичного ключа для шифрования голоса
   rpc GetVotePublicKey(empty) returns (GetVotePublicKeyResponse) {
     option (google.api.http) = {
       post: "/v1/get-public-key"

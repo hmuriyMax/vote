@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (r *Postgres) SelectUserByLogin(ctx context.Context, login string) (*model.UserAuth, error) {
+func (r *InMemory) SelectUserByLogin(ctx context.Context, login string) (*model.UserAuth, error) {
 	return &model.UserAuth{
 		ID:            1,
 		Name:          "test",
@@ -17,7 +17,7 @@ func (r *Postgres) SelectUserByLogin(ctx context.Context, login string) (*model.
 	}, nil
 }
 
-func (r *Postgres) SelectUserByID(ctx context.Context, id int64) (*model.UserAuth, error) {
+func (r *InMemory) SelectUserByID(ctx context.Context, id int64) (*model.UserAuth, error) {
 	return &model.UserAuth{
 		ID:            1,
 		Name:          "test",
@@ -28,11 +28,11 @@ func (r *Postgres) SelectUserByID(ctx context.Context, id int64) (*model.UserAut
 	}, nil
 }
 
-func (r *Postgres) InsertUser(ctx context.Context, user *model.UserAuth) (int64, error) {
+func (r *InMemory) InsertUser(ctx context.Context, user *model.UserAuth) (int64, error) {
 	return 1, nil
 }
 
-func (r *Postgres) NewToken(ctx context.Context, userID int64) (*model.Token, error) {
+func (r *InMemory) NewToken(ctx context.Context, userID int64) (*model.Token, error) {
 	return &model.Token{
 		ID:        1,
 		UserID:    userID,
@@ -41,6 +41,6 @@ func (r *Postgres) NewToken(ctx context.Context, userID int64) (*model.Token, er
 	}, nil
 }
 
-func (r *Postgres) AssertToken(ctx context.Context, userID int64, token string) (bool, error) {
+func (r *InMemory) AssertToken(ctx context.Context, userID int64, token string) (bool, error) {
 	return token == "test", nil
 }

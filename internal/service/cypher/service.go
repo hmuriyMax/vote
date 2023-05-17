@@ -23,7 +23,9 @@ func NewCypherService() (*Service, error) {
 }
 
 func (c *Service) DecryptProto(cypherText []byte, dest proto.Message) error {
-	plain, err := rsa.DecryptOAEP(sha256.New(), nil, c.servicePrivateKey, cypherText, []byte("vote"))
+	hash := sha256.New()
+	rnd := rand.Reader
+	plain, err := rsa.DecryptOAEP(hash, rnd, c.servicePrivateKey, cypherText, []byte("vote"))
 	if err != nil {
 		return fmt.Errorf("rsa.Decrypt: %w", err)
 	}

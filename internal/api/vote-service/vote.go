@@ -18,7 +18,7 @@ func (s *Implementation) Vote(ctx context.Context, req *vote.VoteRequest) (*vote
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	if err := s.authMiddle(ctx, req.GetAuth()); err != nil {
-		return nil, err
+		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	var (
@@ -61,7 +61,7 @@ func (s *Implementation) GetVotesForUser(ctx context.Context, req *vote.GetVotes
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	if err := s.authMiddle(ctx, req.GetAuth()); err != nil {
-		return nil, err
+		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	votes, err := s.voteService.GetVotesByUserID(ctx, req.GetAuth().UserID)
@@ -79,7 +79,7 @@ func (s *Implementation) GetVoteInfo(ctx context.Context, req *vote.GetVoteInfoR
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	if err := s.authMiddle(ctx, req.GetAuth()); err != nil {
-		return nil, err
+		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	info, err := s.voteService.GetVoteInfoByID(ctx, req.GetVoteId())
